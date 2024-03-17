@@ -1,17 +1,36 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using BankAPI.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BankAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class Accounts : ControllerBase
     {
         [HttpGet]
-        public string GetAccount()
+
+        public List<Account> GetAccounts()
         {
-            return "Acc N123, Name Scotty";
+
+            return new List<Account>
+            {
+                new Account {Id = 1, Number = 123, Balance = 1000},
+                new Account {Id = 2, Number = 456, Balance = 2000}
+            };
+
         }
 
+        [HttpPost]
+        public string CreateAccount(Account account)
+        {
+            var rnd = new Random();
+            account.Number = rnd.Next(100, 99999);
+
+            var listAccounts = new List<Account>();
+            listAccounts.Add(account);
+
+            return "Account created";
+        }
     }
 }
