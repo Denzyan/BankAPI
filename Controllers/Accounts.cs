@@ -1,6 +1,7 @@
 ﻿using BankAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using BankAPI.CSVHelperService;
 
 namespace BankAPI.Controllers
 {
@@ -27,10 +28,16 @@ namespace BankAPI.Controllers
             var rnd = new Random();
             account.Number = rnd.Next(100, 99999);
 
-            var listAccounts = new List<Account>();
-            listAccounts.Add(account);
+            var listAccounts = new List<Account>
+            {
+                account
+            };
+
+            CSVService.WriteToCsv(listAccounts);
 
             return "Account created";
         }
+
     }
+
 }
