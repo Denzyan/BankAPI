@@ -11,19 +11,43 @@ namespace BankAPI.Controllers
     {
         [HttpGet]
 
-        public List<Account> GetAccounts()
+        public ActionResult <List<Account>> GetAccounts()
         {
-
-            return new List<Account>
+            try 
             {
-                new Account {Id = 1, Number = 123, Balance = 1000},
-                new Account {Id = 2, Number = 456, Balance = 2000}
-            };
+                var accountList = CSVService.ReadFromCsv();
+                return Ok(accountList);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
         }
 
+        [HttpGet("{id}")]
+
+        public ActionResult<Account> GetAccountById([FromRoute] int id)
+        {
+            try 
+            {
+                var account = CSVService.GetAccountById(id);
+
+                if (account.Id == -1)
+                {
+                    return BadRequest($"Account with ID: {id} not found");
+                }
+
+                return Ok(account);
+            }
+            catch (Exception)
+            { 
+                return NotFound("File not found");
+            }
+        }
+
         [HttpPost]
-        public string CreateAccount(Account account)
+        public ActionResult<Account> CreateAccount([FromBody] Account account)
         {
             var rnd = new Random();
             account.Number = rnd.Next(100, 99999);
@@ -33,9 +57,16 @@ namespace BankAPI.Controllers
                 account
             };
 
-            CSVService.WriteToCsv(listAccounts);
+            try 
+            {
+                CSVService.WriteToCsv(listAccounts);
+            }
+            catch (Exception ex) 
+            { 
+                return BadRequest(ex.Message);
+            }
 
-            return "Account created";
+            return Ok(account);
         }
 
     }
