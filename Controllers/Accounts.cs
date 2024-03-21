@@ -11,9 +11,9 @@ namespace BankAPI.Controllers
     {
         [HttpGet]
 
-        public ActionResult <List<Account>> GetAccounts()
+        public ActionResult<List<Account>> GetAccounts()
         {
-            try 
+            try
             {
                 var accountList = CSVService.ReadFromCsv();
                 return Ok(accountList);
@@ -25,23 +25,23 @@ namespace BankAPI.Controllers
 
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("account/{id}")]
 
         public ActionResult<Account> GetAccountById([FromRoute] int id)
         {
-            try 
+            try
             {
                 var account = CSVService.GetAccountById(id);
 
                 if (account.Id == -1)
                 {
-                    return BadRequest($"Account with ID: {id} not found");
+                    return BadRequest($"Account with ID: {id} not found.");
                 }
 
                 return Ok(account);
             }
             catch (Exception)
-            { 
+            {
                 return NotFound("File not found");
             }
         }
@@ -51,24 +51,45 @@ namespace BankAPI.Controllers
         {
             var rnd = new Random();
             account.Number = rnd.Next(100, 99999);
+            int id = 0;
+            var allAccounts = CSVService.ReadFromCsv();
+
+            if (allAccounts.Count == 0)
+            {
+                id = 1;
+            }
+            else
+            {
+                var lastAccount = allAccounts.LastOrDefault();
+                id = lastAccount.Id;
+                id++;
+            }
+
+            account.Id = id;
 
             var listAccounts = new List<Account>
             {
                 account
             };
 
-            try 
+            try
             {
                 CSVService.WriteToCsv(listAccounts);
             }
-            catch (Exception ex) 
-            { 
+            catch (Exception ex)
+            {
                 return BadRequest(ex.Message);
             }
 
             return Ok(account);
         }
 
+        [HttpDelete("delete/{id}")]
+        public ActionResult DeleteAccountById([FromRoute]int id) 
+        { 
+            CSVService.DeleteAccount(id);
+            return Ok();
+        }
     }
 
 }

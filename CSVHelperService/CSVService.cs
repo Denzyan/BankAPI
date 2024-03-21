@@ -24,16 +24,17 @@ namespace BankAPI.CSVHelperService
 
         public static List<Account> ReadFromCsv() 
         {
-            if (File.Exists("Accounts.csv"))
+            if (!File.Exists("Accounts.csv"))
             {
-                using (var reader = new StreamReader("Accounts.csv"))
-                using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
-                {
-                    return csv.GetRecords<Account>().ToList();
-                }
+                return new List<Account>();
             }
-            throw new Exception();
-           
+
+            using (var reader = new StreamReader("Accounts.csv"))
+            using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+            {
+                return csv.GetRecords<Account>().ToList();
+            }
+
         }
 
         public static Account GetAccountById(int id)
@@ -49,6 +50,17 @@ namespace BankAPI.CSVHelperService
             }
 
             return new Account() { Id = -1 };
+        }
+
+        public static void DeleteAccount(int id)
+        {
+            var allAccounts = ReadFromCsv();
+
+            var accountDelete = allAccounts.FirstOrDefault(acc => acc.Id == id);
+
+            allAccounts.Remove(accountDelete);
+
+            WriteToCsv(allAccounts);
         }
 
 
