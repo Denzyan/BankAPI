@@ -22,6 +22,15 @@ namespace BankAPI.CSVHelperService
             }
         }
 
+        public static void RewriteToCsv(List<Account> listToWrite)
+        {
+            using (var writer = new StreamWriter("Accounts.csv"))
+            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+            {
+                csv.WriteRecords(listToWrite);
+            }
+        }
+
         public static List<Account> ReadFromCsv() 
         {
             if (!File.Exists("Accounts.csv"))
@@ -60,8 +69,9 @@ namespace BankAPI.CSVHelperService
 
             allAccounts.Remove(accountDelete);
 
-            WriteToCsv(allAccounts);
+            RewriteToCsv(allAccounts);
         }
+
 
 
 
