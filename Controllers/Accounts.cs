@@ -15,7 +15,7 @@ namespace BankAPI.Controllers
         {
             try
             {
-                var accountList = CSVService.ReadFromCsv();
+                var accountList = CsvService.ReadFromCsv();
                 return Ok(accountList);
             }
             catch (Exception ex)
@@ -25,13 +25,13 @@ namespace BankAPI.Controllers
 
         }
 
-        [HttpGet("account/{id}")]
+        [HttpGet("{id}/account")]
 
         public ActionResult<Account> GetAccountById([FromRoute] int id)
         {
             try
             {
-                var account = CSVService.GetAccountById(id);
+                var account = CsvService.GetAccountById(id);
 
                 if (account.Id == -1)
                 {
@@ -52,7 +52,7 @@ namespace BankAPI.Controllers
             var rnd = new Random();
             account.Number = rnd.Next(100, 99999);
             int id = 0;
-            var allAccounts = CSVService.ReadFromCsv();
+            var allAccounts = CsvService.ReadFromCsv();
 
             if (allAccounts.Count == 0)
             {
@@ -74,7 +74,7 @@ namespace BankAPI.Controllers
 
             try
             {
-                CSVService.WriteToCsv(listAccounts);
+                CsvService.WriteToCsv(listAccounts);
             }
             catch (Exception ex)
             {
@@ -84,10 +84,42 @@ namespace BankAPI.Controllers
             return Ok(account);
         }
 
-        [HttpDelete("delete/{id}")]
+        [HttpPost("{id}/deposit")]
+
+        public ActionResult<Account> DepositToAccount(
+            [FromRoute] int id,
+            [FromBody]DepositRequest depositRequest )
+        {
+            var accountToDeposit = CsvService.GetAccountById(id);
+
+            accountToDeposit.Balance += depositRequest.DepositAmount;
+
+            CsvService.UpdateAccountInformation(accountToDeposit);
+
+            return Ok(accountToDeposit);
+        }
+
+        [HttpPost("{id}/withdrow")]
+
+        public ActionResult<Account> WithdrawToAccount(
+            [FromRoute] int id,
+            [FromBody] DepositRequest withdrawRequest)
+        {
+            var accountToWithdraw= CsvService.GetAccountById(id);
+
+            accountToWithdraw.Balance -= withdrawRequest.DepositAmount;
+
+            CsvService.UpdateAccountInformation(accountToWithdraw);
+
+            return Ok(accountToWithdraw);
+        }
+
+
+
+        [HttpDelete("{id}/delete")]
         public ActionResult DeleteAccountById([FromRoute]int id) 
         { 
-            CSVService.DeleteAccount(id);
+            CsvService.DeleteAccount(id);
             return Ok();
         }
     }

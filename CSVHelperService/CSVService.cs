@@ -5,7 +5,7 @@ using System.Globalization;
 
 namespace BankAPI.CSVHelperService
 {
-    public static class CSVService
+    public static class CsvService
     {
         public static void WriteToCsv(List<Account> listToWrite)
         {
@@ -22,7 +22,7 @@ namespace BankAPI.CSVHelperService
             }
         }
 
-        public static void RewriteToCsv(List<Account> listToWrite)
+        public static void OverwriteToCsv(List<Account> listToWrite)
         {
             using (var writer = new StreamWriter("Accounts.csv"))
             using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
@@ -69,8 +69,21 @@ namespace BankAPI.CSVHelperService
 
             allAccounts.Remove(accountDelete);
 
-            RewriteToCsv(allAccounts);
+            OverwriteToCsv(allAccounts);
         }
+
+        public static void UpdateAccountInformation(Account accountToUpdate)
+        {
+            var allAccounts = ReadFromCsv();
+
+            int accountIndexToReplace = allAccounts.FindIndex(acc => acc.Id == accountToUpdate.Id);
+            
+            allAccounts.RemoveAt(accountIndexToReplace);
+
+            allAccounts.Insert(accountIndexToReplace, accountToUpdate);
+
+            OverwriteToCsv(allAccounts);
+        } 
 
 
 

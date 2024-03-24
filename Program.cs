@@ -1,3 +1,6 @@
+using System;
+using BankAPI.Controllers;
+
 namespace BankAPI
 {
     public class Program
@@ -10,14 +13,26 @@ namespace BankAPI
 
             builder.Services.AddControllers();
 
+            builder.Services.AddEndpointsApiExplorer();
+
+            // Add Cors
+            builder.Services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+            {
+                builder.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+            }));
+
             var app = builder.Build();
+
+            
 
             // Configure the HTTP request pipeline.
 
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
+            app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
 
             app.MapControllers();
 
