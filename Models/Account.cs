@@ -1,4 +1,4 @@
-﻿namespace BankAPI.Models
+﻿namespace BankApi.Models
 {
     public class Account
     {
@@ -8,8 +8,6 @@
         public string Owner { get; set; }
         public int Balance { get; set; }
         public List<Transaction> Transactions { get; set; } = new List<Transaction>();
-
-
 
     }
 }

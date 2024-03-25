@@ -1,4 +1,4 @@
-﻿namespace BankAPI.Models
+﻿namespace BankApi.Models
 {
     public class DepositRequest
     {

@@ -1,4 +1,4 @@
-﻿namespace BankAPI.Enums
+﻿namespace BankApi.Enums
 {
     public enum TransactionType
     {

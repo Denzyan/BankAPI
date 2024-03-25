@@ -1,7 +1,7 @@
 using System;
-using BankAPI.Controllers;
+using BankApi.Controllers;
 
-namespace BankAPI
+namespace BankApi
 {
     public class Program
     {

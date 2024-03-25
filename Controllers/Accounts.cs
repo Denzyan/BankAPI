@@ -1,9 +1,11 @@
-﻿using BankAPI.Models;
+﻿using BankApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using BankAPI.CSVHelperService;
+using BankApi.CSVHelperService;
+using BankApi.Enums;
+using BankApi.IdService;
 
-namespace BankAPI.Controllers
+namespace BankApi.Controllers
 {
     [Route("[controller]")]
     [ApiController]
@@ -51,23 +53,10 @@ namespace BankAPI.Controllers
         {
             var rnd = new Random();
             account.Number = rnd.Next(100, 99999);
-            int id = 0;
-            var allAccounts = CsvService.ReadFromCsv();
 
-            if (allAccounts.Count == 0)
-            {
-                id = 1;
-            }
-            else
-            {
-                var lastAccount = allAccounts.LastOrDefault();
-                id = lastAccount.Id;
-                id++;
-            }
+            account.Id = IdHelper.GetNextId();
 
-            account.Id = id;
-
-            var listAccounts = new List<Account>
+            var listAccounts = new List<Account>()
             {
                 account
             };
@@ -94,33 +83,68 @@ namespace BankAPI.Controllers
 
             accountToDeposit.Balance += depositRequest.DepositAmount;
 
+            accountToDeposit.Transactions.Add(
+                new Transaction
+                {
+                    Amount = depositRequest.DepositAmount,
+                    Date = DateTime.Now,
+                    TrasactionType = TransactionType.Deposit,
+                    Account = accountToDeposit.Number,
+                    OldBalance = accountToDeposit.Balance - depositRequest.DepositAmount,
+                    NewBalance = accountToDeposit.Balance
+                });
+
             CsvService.UpdateAccountInformation(accountToDeposit);
+
 
             return Ok(accountToDeposit);
         }
 
-        [HttpPost("{id}/withdrow")]
+        [HttpPost("{id}/withdraw")]
 
         public ActionResult<Account> WithdrawToAccount(
             [FromRoute] int id,
-            [FromBody] DepositRequest withdrawRequest)
+            [FromBody] WithdrawRequest withdrawRequest)
         {
             var accountToWithdraw= CsvService.GetAccountById(id);
 
-            accountToWithdraw.Balance -= withdrawRequest.DepositAmount;
+            accountToWithdraw.Balance -= withdrawRequest.WithdrawAmount;
+
+            accountToWithdraw.Transactions.Add(
+               new Transaction
+               {
+                   Amount = withdrawRequest.WithdrawAmount,
+                   Date = DateTime.Now,
+                   TrasactionType = TransactionType.Withdraw,
+                   Account = accountToWithdraw.Number,
+                   OldBalance = accountToWithdraw.Balance + withdrawRequest.WithdrawAmount,
+                   NewBalance = accountToWithdraw.Balance
+               });
 
             CsvService.UpdateAccountInformation(accountToWithdraw);
 
             return Ok(accountToWithdraw);
         }
 
-
-
         [HttpDelete("{id}/delete")]
         public ActionResult DeleteAccountById([FromRoute]int id) 
         { 
             CsvService.DeleteAccount(id);
             return Ok();
+        }
+
+        [HttpPut("{id}/update")]
+        public ActionResult UpdateName(
+            [FromRoute] int id,
+            [FromBody] string name)
+        {
+            var accountToUpdate = CsvService.GetAccountById(id);
+
+            accountToUpdate.Owner = name;
+
+            CsvService.UpdateAccountInformation(accountToUpdate);
+
+            return Ok(accountToUpdate);
         }
     }
 

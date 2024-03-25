@@ -1,13 +1,15 @@
-﻿namespace BankAPI.IdService
+﻿namespace BankApi.IdService
 {
     public static class IdHelper
     {
         public static int GetNextId()
         {
             var newId = 0;
+
             if (File.Exists("id.txt"))
             {
                 string id = File.ReadAllText("id.txt");
+
                 if (int.TryParse(id, out int result))
                 {
                     result++;

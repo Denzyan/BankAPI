@@ -1,9 +1,10 @@
-﻿using BankAPI.Models;
+﻿using BankApi.Models;
 using CsvHelper;
 using CsvHelper.Configuration;
 using System.Globalization;
+using BankApi.Controllers;
 
-namespace BankAPI.CSVHelperService
+namespace BankApi.CSVHelperService
 {
     public static class CsvService
     {
@@ -11,10 +12,10 @@ namespace BankAPI.CSVHelperService
         {
             var config = new CsvConfiguration(CultureInfo.InvariantCulture)
             {
-                HasHeaderRecord = !File.Exists("Accounts.csv")
+                HasHeaderRecord = !File.Exists("accounts.csv")
             };
 
-            using (var stream = File.Open("Accounts.csv", FileMode.Append))
+            using (var stream = File.Open("accounts.csv", FileMode.Append))
             using (var writer = new StreamWriter(stream))
             using (var csv = new CsvWriter(writer, config))
             {
@@ -22,23 +23,29 @@ namespace BankAPI.CSVHelperService
             }
         }
 
-        public static void OverwriteToCsv(List<Account> listToWrite)
+        public static void OverwriteToCsv(List<Account> accounts)
         {
-            using (var writer = new StreamWriter("Accounts.csv"))
-            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
             {
-                csv.WriteRecords(listToWrite);
+                HasHeaderRecord = true,
+            };
+
+            using (var stream = File.Open("accounts.csv", FileMode.Create))
+            using (var writer = new StreamWriter(stream))
+            using (var csv = new CsvWriter(writer, config))
+            {
+                csv.WriteRecords(accounts);
             }
         }
 
         public static List<Account> ReadFromCsv() 
         {
-            if (!File.Exists("Accounts.csv"))
+            if (!File.Exists("accounts.csv"))
             {
                 return new List<Account>();
             }
 
-            using (var reader = new StreamReader("Accounts.csv"))
+            using (var reader = new StreamReader("accounts.csv"))
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 return csv.GetRecords<Account>().ToList();
@@ -82,7 +89,7 @@ namespace BankAPI.CSVHelperService
 
             allAccounts.Insert(accountIndexToReplace, accountToUpdate);
 
-            OverwriteToCsv(allAccounts);
+            OverwriteToCsv(allAccounts);    
         } 
 
 
