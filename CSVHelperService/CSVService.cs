@@ -6,9 +6,9 @@ using BankApi.Controllers;
 
 namespace BankApi.CSVHelperService
 {
-    public static class CsvService
+    public static class CsvService<T> where T : class
     {
-        public static void WriteToCsv(List<Account> listToWrite)
+        public static void WriteToCsv(List<T> listToWrite)
         {
             var config = new CsvConfiguration(CultureInfo.InvariantCulture)
             {
@@ -23,7 +23,7 @@ namespace BankApi.CSVHelperService
             }
         }
 
-        public static void OverwriteToCsv(List<Account> accounts)
+        public static void OverwriteToCsv(List<T> accounts)
         {
             var config = new CsvConfiguration(CultureInfo.InvariantCulture)
             {
@@ -38,22 +38,22 @@ namespace BankApi.CSVHelperService
             }
         }
 
-        public static List<Account> ReadFromCsv() 
+        public static List<T> ReadFromCsv() 
         {
             if (!File.Exists("accounts.csv"))
             {
-                return new List<Account>();
+                return new List<T>();
             }
 
             using (var reader = new StreamReader("accounts.csv"))
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
-                return csv.GetRecords<Account>().ToList();
+                return csv.GetRecords<T>().ToList();
             }
 
         }
 
-        public static Account GetAccountById(int id)
+        public static T GetAccountById(int id)
         {
             var allAccounts = ReadFromCsv();
 
@@ -65,7 +65,7 @@ namespace BankApi.CSVHelperService
                 }
             }
 
-            return new Account() { Id = -1 };
+            return new T() { Id = -1 };
         }
 
         public static void DeleteAccount(int id)

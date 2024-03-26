@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using BankApi.CSVHelperService;
 using BankApi.Enums;
 using BankApi.IdService;
+using System.Security.Principal;
 
 namespace BankApi.Controllers
 {
@@ -18,6 +19,13 @@ namespace BankApi.Controllers
             try
             {
                 var accountList = CsvService.ReadFromCsv();
+                var transactionList = TransactionService.ReadFromCsv();
+
+                foreach(var account in accountList) 
+                {
+                    account.Transactions = transactionList.FindAll(t => t.AccountId == account.Id);
+                }
+
                 return Ok(accountList);
             }
             catch (Exception ex)
@@ -83,16 +91,21 @@ namespace BankApi.Controllers
 
             accountToDeposit.Balance += depositRequest.DepositAmount;
 
-            accountToDeposit.Transactions.Add(
-                new Transaction
-                {
+            if (accountToDeposit.Id == -1)
+            {
+                return BadRequest($"Account with ID: {id} not found.");
+            }
+
+            var transaction = new Transaction
+            {
+                    Id = IdHelper.GetNextTransactionId(),
                     Amount = depositRequest.DepositAmount,
                     Date = DateTime.Now,
                     TrasactionType = TransactionType.Deposit,
-                    Account = accountToDeposit.Number,
+                    AccountId = accountToDeposit.Id,
                     OldBalance = accountToDeposit.Balance - depositRequest.DepositAmount,
                     NewBalance = accountToDeposit.Balance
-                });
+                };
 
             CsvService.UpdateAccountInformation(accountToDeposit);
 
@@ -110,16 +123,21 @@ namespace BankApi.Controllers
 
             accountToWithdraw.Balance -= withdrawRequest.WithdrawAmount;
 
-            accountToWithdraw.Transactions.Add(
-               new Transaction
+            if (accountToWithdraw.Id == -1)
+            {
+                return BadRequest($"Account with ID: {id} not found.");
+            }
+
+            var transaction = new Transaction
                {
+                   Id = IdHelper.GetNextTransactionId(),
                    Amount = withdrawRequest.WithdrawAmount,
                    Date = DateTime.Now,
                    TrasactionType = TransactionType.Withdraw,
-                   Account = accountToWithdraw.Number,
+                   AccountId = accountToWithdraw.Id,
                    OldBalance = accountToWithdraw.Balance + withdrawRequest.WithdrawAmount,
                    NewBalance = accountToWithdraw.Balance
-               });
+               };
 
             CsvService.UpdateAccountInformation(accountToWithdraw);
 
@@ -140,11 +158,16 @@ namespace BankApi.Controllers
         {
             var accountToUpdate = CsvService.GetAccountById(id);
 
+            if (accountToUpdate.Id == -1)
+            {
+                return BadRequest($"Account with ID: {id} not found.");
+            }
+
             accountToUpdate.Owner = name;
 
             CsvService.UpdateAccountInformation(accountToUpdate);
 
-            return Ok(accountToUpdate);
+            return Accepted(accountToUpdate);
         }
     }
 
