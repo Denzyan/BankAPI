@@ -3,9 +3,8 @@
 namespace BankApi.Models
 
 {
-    public class Transaction
+    public class Transaction : EntityBase
     {
-        public int Id { get; set; }
         public DateTime Date { get; set; } = DateTime.Now;
         public int Amount { get; set; }
         public int AccountId {  get; set; }
