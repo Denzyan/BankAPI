@@ -9,7 +9,17 @@ namespace BankApi
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            var env = builder.Environment.EnvironmentName;
+
+            builder.Configuration
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{env}.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables()
+                .Build();
+
             // Add services to the container.
+
+            var configuration = builder.Configuration;
 
             builder.Services.AddControllers();
 
@@ -24,8 +34,6 @@ namespace BankApi
             }));
 
             var app = builder.Build();
-
-            
 
             // Configure the HTTP request pipeline.
 

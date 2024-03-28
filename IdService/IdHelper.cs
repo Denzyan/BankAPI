@@ -2,54 +2,31 @@
 {
     public static class IdHelper
     {
-        public static int GetNextId()
+        public static int GetNextId(string fileName)
         {
             var newId = 0;
 
-            if (File.Exists("id.txt"))
+            if (File.Exists(fileName))
             {
-                string id = File.ReadAllText("id.txt");
+                string id = File.ReadAllText(fileName);
 
                 if (int.TryParse(id, out int result))
                 {
                     result++;
 
-                    File.WriteAllText("id.txt", result.ToString());
+                    File.WriteAllText(fileName, result.ToString());
                     newId = result;
                 }
             }
             else
             {
-                File.WriteAllText("id.txt", "1");
+                File.WriteAllText(fileName, "1");
                 newId = 1;
             }
 
             return newId;
         }
 
-        public static int GetNextTransactionId()
-        {
-            var newId = 0;
-
-            if (File.Exists("t_id.txt"))
-            {
-                string id = File.ReadAllText("t_id.txt");
-
-                if (int.TryParse(id, out int result))
-                {
-                    result++;
-
-                    File.WriteAllText("t_id.txt", result.ToString());
-                    newId = result;
-                }
-            }
-            else
-            {
-                File.WriteAllText("t_id.txt", "1");
-                newId = 1;
-            }
-
-            return newId;
-        }
+        
     }
 }

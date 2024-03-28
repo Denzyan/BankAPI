@@ -7,33 +7,21 @@ namespace BankApi.CSVHelperService
 {
     public static class TransactionService
     {
-        public static void WriteToCsv(List<Transaction> listToWrite)
+        public static List<Transaction> GetTransactionsById(int id, string fileName)
         {
-            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
-            {
-                HasHeaderRecord = !File.Exists("transaction.csv")
-            };
+            var allTransactions = CsvService<Transaction>.ReadFromCsv(fileName);
+            var transactions = new List<Transaction>();
 
-            using (var stream = File.Open("transaction.csv", FileMode.Append))
-            using (var writer = new StreamWriter(stream))
-            using (var csv = new CsvWriter(writer, config))
+            foreach (var transaction in allTransactions)
             {
-                csv.WriteRecords(listToWrite);
+                if (transaction.AccountId == id)
+                {
+                    transactions.Add(transaction);
+                }
             }
+
+            return transactions;
         }
 
-        public static List<Transaction> ReadFromCsv()
-        {
-            if (!File.Exists("transaction.csv"))
-            {
-                return new List<Transaction>();
-            }
-
-            using (var reader = new StreamReader("transaction.csv"))
-            using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
-            {
-                return csv.GetRecords<Transaction>().ToList();
-            }
-        }
     }
 }

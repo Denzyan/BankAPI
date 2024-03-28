@@ -6,16 +6,16 @@ using BankApi.Controllers;
 
 namespace BankApi.CSVHelperService
 {
-    public static class CsvService<T> where T : class
+    public static class CsvService<T> where T : EntityBase, new()
     {
-        public static void WriteToCsv(List<T> listToWrite)
+        public static void WriteToCsv(List<T> listToWrite, string fileName)
         {
             var config = new CsvConfiguration(CultureInfo.InvariantCulture)
             {
-                HasHeaderRecord = !File.Exists("accounts.csv")
+                HasHeaderRecord = !File.Exists(fileName)
             };
 
-            using (var stream = File.Open("accounts.csv", FileMode.Append))
+            using (var stream = File.Open(fileName, FileMode.Append))
             using (var writer = new StreamWriter(stream))
             using (var csv = new CsvWriter(writer, config))
             {
@@ -23,76 +23,74 @@ namespace BankApi.CSVHelperService
             }
         }
 
-        public static void OverwriteToCsv(List<T> accounts)
+        public static void OverwriteToCsv(List<T> entities, string fileName)
         {
             var config = new CsvConfiguration(CultureInfo.InvariantCulture)
             {
                 HasHeaderRecord = true,
             };
 
-            using (var stream = File.Open("accounts.csv", FileMode.Create))
+            using (var stream = File.Open(fileName, FileMode.Create))
             using (var writer = new StreamWriter(stream))
             using (var csv = new CsvWriter(writer, config))
             {
-                csv.WriteRecords(accounts);
+                csv.WriteRecords(entities);
             }
         }
 
-        public static List<T> ReadFromCsv() 
+        public static List<T> ReadFromCsv(string fileName) 
         {
-            if (!File.Exists("accounts.csv"))
+            if (!File.Exists(fileName))
             {
                 return new List<T>();
             }
 
-            using (var reader = new StreamReader("accounts.csv"))
+            using (var reader = new StreamReader(fileName))
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 return csv.GetRecords<T>().ToList();
             }
-
         }
 
-        public static T GetAccountById(int id)
+        public static T GetEntityById(int id, string fileName)
         {
-            var allAccounts = ReadFromCsv();
+            var list = ReadFromCsv(fileName);
 
-            foreach (var account in allAccounts) 
+            foreach (var entity in list) 
             {
-                if (account.Id == id)
+                if (entity.Id == id)
                 {
-                    return account;
+                    return entity;
                 }
             }
 
             return new T() { Id = -1 };
         }
 
-        public static void DeleteAccount(int id)
+        public static void DeleteEntity(int id, string fileName
+            )
         {
-            var allAccounts = ReadFromCsv();
+            var list = ReadFromCsv(fileName);
 
-            var accountDelete = allAccounts.FirstOrDefault(acc => acc.Id == id);
+            var entityToDelete = list.FirstOrDefault(acc => acc.Id == id);
 
-            allAccounts.Remove(accountDelete);
+            list.Remove(entityToDelete);
 
-            OverwriteToCsv(allAccounts);
+            OverwriteToCsv(list, fileName);
         }
 
-        public static void UpdateAccountInformation(Account accountToUpdate)
+        public static void UpdateEntityInformation(T entityToUpdate, string fileName)
         {
-            var allAccounts = ReadFromCsv();
+            var list = ReadFromCsv(fileName);
 
-            int accountIndexToReplace = allAccounts.FindIndex(acc => acc.Id == accountToUpdate.Id);
+            int entityIndexToReplace = list.FindIndex(ent => ent.Id == entityToUpdate.Id);
             
-            allAccounts.RemoveAt(accountIndexToReplace);
+            list.RemoveAt(entityIndexToReplace);
 
-            allAccounts.Insert(accountIndexToReplace, accountToUpdate);
+            list.Insert(entityIndexToReplace, entityToUpdate);
 
-            OverwriteToCsv(allAccounts);    
+            OverwriteToCsv(list, fileName);    
         } 
-
-
 
 
 
