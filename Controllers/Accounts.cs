@@ -1,6 +1,6 @@
 ﻿using BankApi.Models;
 using Microsoft.AspNetCore.Mvc;
-using BankApi.CSVHelperService;
+using BankApi.CsvHelperService;
 using BankApi.Enums;
 using BankApi.IdService;
 using System.Net.NetworkInformation;
@@ -13,39 +13,47 @@ namespace BankApi.Controllers
     [ApiController]
     public class Accounts : ControllerBase
     {
-        IConfiguration _configuration;
-        public Accounts (IConfiguration configuration) 
+        private readonly CsvService<Account> _csvAccountService;
+        private readonly CsvService<Transaction> _csvTransactionService;
+        private readonly ILogger<Accounts> _logger;
+
+        public Accounts(
+            CsvService<Account> csvAccountService,
+            CsvService<Transaction> csvTransactionService,
+            ILogger<Accounts> logger)
         {
-            _configuration = configuration;
-            _accountFileName = _configuration["_accountFileName"];
-            _transactionFileName = _configuration["_transactionFileName"];
-            _accountIdFileName = _configuration["_accountIdFileName"];
-            _transactionIdFileName = _configuration["_transactionIdFileName"];
+            _csvAccountService = csvAccountService;
+            _csvTransactionService = csvTransactionService;
+            _logger = logger;
         }
 
-        private readonly string _accountFileName;
-        private readonly string _transactionFileName;
-        private readonly string _accountIdFileName;
-        private readonly string _transactionIdFileName;
+        private const string _accountFileName = "accounts.csv";
+        private const string _transactionFileName = "transactions.csv";
+        private const string _accountIdFileName = "id.txt";
+        private const string _transactionIdFileName = "t_id.txt";
 
         [HttpGet]
 
         public ActionResult<List<Account>> GetAccounts()
         {
+            _logger.LogWarning("Getting all accounts");
+
             try
             {
-                var accountList = CsvService<Account>.ReadFromCsv(_accountFileName);
-                
-                foreach(var account in accountList) 
+                var accountList = csvAccountService.ReadFromCsv(_accountFileName);
+
+                foreach (var account in accountList) 
                 {
                     account.Transactions = TransactionService.GetTransactionsById
                         (account.Id, _transactionFileName);
                 }
 
+                _logger.LogError("Successfully got all accounts.");
                 return Ok(accountList);
             }
             catch (Exception ex)
             {
+                _logger.LogError("ERROR");
                 return BadRequest(ex.Message);
             }
 
@@ -57,7 +65,7 @@ namespace BankApi.Controllers
         {
             try
             {
-                var account = CsvService<Account>.GetEntityById(id, _accountFileName);
+                var account = csvAccountService.GetEntityById(id, _accountFileName);
 
                 if (account.Id == -1)
                 {
@@ -92,7 +100,7 @@ namespace BankApi.Controllers
 
             try
             {
-                CsvService<Account>.WriteToCsv(listAccounts, _accountFileName);
+                csvAccountService.WriteToCsv(listAccounts, _accountFileName);
             }
             catch (Exception ex)
             {
@@ -108,7 +116,7 @@ namespace BankApi.Controllers
             [FromRoute] int id,
             [FromBody]DepositRequest depositRequest)
         {
-            var accountToDeposit = CsvService<Account>.GetEntityById(id, _accountFileName);
+            var accountToDeposit = csvAccountService.GetEntityById(id, _accountFileName);
 
             accountToDeposit.Balance += depositRequest.Amount;
 
@@ -133,8 +141,8 @@ namespace BankApi.Controllers
 
             accountToDeposit.Transactions.Add(transaction);
 
-            CsvService<Account>.UpdateEntityInformation(accountToDeposit, _accountFileName);
-            CsvService<Transaction>.WriteToCsv(new List<Transaction>() 
+            csvAccountService.UpdateEntityInformation(accountToDeposit, _accountFileName);
+            csvTransactionService.WriteToCsv(new List<Transaction>() 
             { transaction }, _transactionFileName);
 
 
@@ -183,8 +191,8 @@ namespace BankApi.Controllers
 
         public ActionResult Transfer(TransferRequest request)
         {
-            var fromAccount = CsvService<Account>.GetEntityById(request.FromId, _accountFileName);
-            var toAccount = CsvService<Account>.GetEntityById(request.ToId, _accountFileName);
+            var fromAccount = csvAccountService.GetEntityById(request.FromId, _accountFileName);
+            var toAccount = csvAccountService.GetEntityById(request.ToId, _accountFileName);
 
             if (fromAccount.Id == -1 || toAccount.Id == -1)
             {
@@ -224,12 +232,12 @@ namespace BankApi.Controllers
             fromAccount.Transactions.Add(transactionFrom);
             toAccount.Transactions.Add(transationTo);
 
-            CsvService<Account>.UpdateEntityInformation(toAccount, _accountFileName);
-            CsvService<Transaction>.WriteToCsv(new List<Transaction>() 
+            csvAccountService.UpdateEntityInformation(toAccount, _accountFileName);
+            csvTransactionService.WriteToCsv(new List<Transaction>() 
             { transationTo }, _transactionFileName);
 
-            CsvService<Account>.UpdateEntityInformation(fromAccount, _accountFileName);
-            CsvService<Transaction>.WriteToCsv(new List<Transaction>() 
+            csvAccountService.UpdateEntityInformation(fromAccount, _accountFileName);
+            csvTransactionService.WriteToCsv(new List<Transaction>() 
             { transactionFrom }, _transactionFileName);
 
             return Ok(fromAccount);
@@ -238,16 +246,16 @@ namespace BankApi.Controllers
         [HttpDelete("{id}")]
         public ActionResult DeleteAccountById([FromRoute]int id) 
         {
-            CsvService<Account>.DeleteEntity(id, _accountFileName);
+            csvAccountService.DeleteEntity(id, _accountFileName);
             return Ok();
         }
 
         [HttpPut("{id}")]
-        public ActionResult UpdateName(
+        public ActionResult UpdateOwnerName(
             [FromRoute] int id,
             [FromBody] UpdateOwnerNameRequest updateRequest)
         {
-            var accountToUpdate = CsvService<Account>.GetEntityById(id, _accountFileName);
+            var accountToUpdate = csvAccountService.GetEntityById(id, _accountFileName);
 
             if (accountToUpdate.Id == -1)
             {
@@ -256,7 +264,7 @@ namespace BankApi.Controllers
 
             accountToUpdate.Owner = updateRequest.Owner;
 
-            CsvService<Account>.UpdateEntityInformation(accountToUpdate, _accountFileName);
+            csvAccountService.UpdateEntityInformation(accountToUpdate, _accountFileName);
 
             return Accepted(accountToUpdate);
         }
@@ -265,9 +273,8 @@ namespace BankApi.Controllers
 
         public ActionResult Ping()
         {
-            var pingInform = _configuration.Get<PingInformation>();
-
-            return Ok(pingInform);
+            
+            return Ok();
         }
     }
 

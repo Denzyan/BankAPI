@@ -1,5 +1,7 @@
 using System;
 using BankApi.Controllers;
+using BankApi.CsvHelperService;
+using BankApi.Models;
 
 namespace BankApi
 {
@@ -22,6 +24,10 @@ namespace BankApi
             var configuration = builder.Configuration;
 
             builder.Services.AddControllers();
+
+            // DI
+            builder.Services.AddSingleton<CsvService<Account>>();
+            builder.Services.AddSingleton<CsvService<Transaction>>();
 
             builder.Services.AddEndpointsApiExplorer();
 

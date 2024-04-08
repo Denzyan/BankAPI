@@ -3,13 +3,14 @@ using CsvHelper.Configuration;
 using CsvHelper;
 using System.Globalization;
 
-namespace BankApi.CSVHelperService
+namespace BankApi.CsvHelperService
 {
     public static class TransactionService
     {
         public static List<Transaction> GetTransactionsById(int id, string fileName)
         {
-            var allTransactions = CsvService<Transaction>.ReadFromCsv(fileName);
+            var service = new CsvService<Transaction>();
+            var allTransactions = service.ReadFromCsv(fileName);
             var transactions = new List<Transaction>();
 
             foreach (var transaction in allTransactions)

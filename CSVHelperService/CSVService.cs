@@ -4,11 +4,11 @@ using CsvHelper.Configuration;
 using System.Globalization;
 using BankApi.Controllers;
 
-namespace BankApi.CSVHelperService
+namespace BankApi.CsvHelperService
 {
-    public static class CsvService<T> where T : EntityBase, new()
+    public class CsvService<T> where T : EntityBase, new()
     {
-        public static void WriteToCsv(List<T> listToWrite, string fileName)
+        public void WriteToCsv(List<T> listToWrite, string fileName)
         {
             var config = new CsvConfiguration(CultureInfo.InvariantCulture)
             {
@@ -23,7 +23,7 @@ namespace BankApi.CSVHelperService
             }
         }
 
-        public static void OverwriteToCsv(List<T> entities, string fileName)
+        public void OverwriteToCsv(List<T> entities, string fileName)
         {
             var config = new CsvConfiguration(CultureInfo.InvariantCulture)
             {
@@ -38,7 +38,7 @@ namespace BankApi.CSVHelperService
             }
         }
 
-        public static List<T> ReadFromCsv(string fileName) 
+        public List<T> ReadFromCsv(string fileName) 
         {
             if (!File.Exists(fileName))
             {
@@ -52,7 +52,7 @@ namespace BankApi.CSVHelperService
             }
         }
 
-        public static T GetEntityById(int id, string fileName)
+        public T GetEntityById(int id, string fileName)
         {
             var list = ReadFromCsv(fileName);
 
@@ -67,7 +67,7 @@ namespace BankApi.CSVHelperService
             return new T() { Id = -1 };
         }
 
-        public static void DeleteEntity(int id, string fileName
+        public void DeleteEntity(int id, string fileName
             )
         {
             var list = ReadFromCsv(fileName);
@@ -79,7 +79,7 @@ namespace BankApi.CSVHelperService
             OverwriteToCsv(list, fileName);
         }
 
-        public static void UpdateEntityInformation(T entityToUpdate, string fileName)
+        public void UpdateEntityInformation(T entityToUpdate, string fileName)
         {
             var list = ReadFromCsv(fileName);
 
