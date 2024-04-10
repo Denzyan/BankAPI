@@ -1,5 +1,4 @@
 using BankApi.Context;
-using BankApi.Models;
 using BankApi.Services;
 
 namespace BankApi
@@ -37,6 +36,8 @@ namespace BankApi
 
             builder.Services.AddEndpointsApiExplorer();
 
+            builder.Services.AddSwaggerGen();
+
             // Add Cors
             builder.Services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
             {
@@ -46,6 +47,12 @@ namespace BankApi
             }));
 
             var app = builder.Build();
+
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            };
 
             // Configure the HTTP request pipeline.
 
