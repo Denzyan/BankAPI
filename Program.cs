@@ -1,7 +1,9 @@
 using System;
+using BankApi.Context;
 using BankApi.Controllers;
 using BankApi.CsvHelperService;
 using BankApi.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BankApi
 {
@@ -25,7 +27,15 @@ namespace BankApi
 
             builder.Services.AddControllers();
 
+            builder.Services.AddEntityFrameworkSqlite()
+                .AddDbContext<BankContext>();
+
+            var serviceProvide = builder.Services.BuildServiceProvider();
+            var context = serviceProvide.GetRequiredService<BankContext>();
+            context.Database.EnsureCreated();
+
             // DI
+            builder.Services.AddSingleton<IAccountsService, AccountsService>();
             builder.Services.AddSingleton<CsvService<Account>>();
             builder.Services.AddSingleton<CsvService<Transaction>>();
 

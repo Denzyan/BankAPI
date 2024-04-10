@@ -17,14 +17,19 @@ namespace BankApi.Controllers
         private readonly CsvService<Transaction> _csvTransactionService;
         private readonly ILogger<Accounts> _logger;
 
+        // DB Sqlite
+        private readonly IAccountsService _accountsService;
+
         public Accounts(
             CsvService<Account> csvAccountService,
             CsvService<Transaction> csvTransactionService,
-            ILogger<Accounts> logger)
+            ILogger<Accounts> logger,
+            IAccountsService accountsService)
         {
             _csvAccountService = csvAccountService;
             _csvTransactionService = csvTransactionService;
             _logger = logger;
+            _accountsService = accountsService;
         }
 
         private const string _accountFileName = "accounts.csv";
