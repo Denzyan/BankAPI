@@ -1,11 +1,8 @@
 ﻿using BankApi.Models;
 using Microsoft.AspNetCore.Mvc;
-using BankApi.CsvHelperService;
 using BankApi.Enums;
-using BankApi.IdService;
-using System.Net.NetworkInformation;
-using Microsoft.VisualBasic;
 using BankApi.Requests;
+using BankApi.Services;
 
 namespace BankApi.Controllers
 {
@@ -13,29 +10,21 @@ namespace BankApi.Controllers
     [ApiController]
     public class Accounts : ControllerBase
     {
-        private readonly CsvService<Account> _csvAccountService;
-        private readonly CsvService<Transaction> _csvTransactionService;
         private readonly ILogger<Accounts> _logger;
 
         // DB Sqlite
         private readonly IAccountsService _accountsService;
+        private readonly ITransactionService _transactionService;
 
         public Accounts(
-            CsvService<Account> csvAccountService,
-            CsvService<Transaction> csvTransactionService,
             ILogger<Accounts> logger,
-            IAccountsService accountsService)
+            IAccountsService accountsService,
+            ITransactionService transactionService)
         {
-            _csvAccountService = csvAccountService;
-            _csvTransactionService = csvTransactionService;
             _logger = logger;
             _accountsService = accountsService;
+            _transactionService = transactionService;
         }
-
-        private const string _accountFileName = "accounts.csv";
-        private const string _transactionFileName = "transactions.csv";
-        private const string _accountIdFileName = "id.txt";
-        private const string _transactionIdFileName = "t_id.txt";
 
         [HttpGet]
 
@@ -45,20 +34,13 @@ namespace BankApi.Controllers
 
             try
             {
-                var accountList = csvAccountService.ReadFromCsv(_accountFileName);
+                var accountList = _accountsService.GetAccounts();
 
-                foreach (var account in accountList) 
-                {
-                    account.Transactions = TransactionService.GetTransactionsById
-                        (account.Id, _transactionFileName);
-                }
-
-                _logger.LogError("Successfully got all accounts.");
+                
                 return Ok(accountList);
             }
             catch (Exception ex)
             {
-                _logger.LogError("ERROR");
                 return BadRequest(ex.Message);
             }
 
@@ -68,24 +50,17 @@ namespace BankApi.Controllers
 
         public ActionResult<Account> GetAccountById([FromRoute] int id)
         {
-            try
+            
+            var account = _accountsService.GetAccountById(id);
+
+            if (account == null)
             {
-                var account = csvAccountService.GetEntityById(id, _accountFileName);
-
-                if (account.Id == -1)
-                {
-                    return BadRequest($"Account with ID: {id} not found.");
-                }
-
-                account.Transactions = TransactionService.GetTransactionsById
-                    (account.Id, _transactionFileName);
-
-                return Ok(account);
+                return BadRequest($"Account with ID: {id} not found.");
             }
-            catch (Exception ex)
-            {
-                return NotFound("File not found");
-            }
+
+            return Ok(account);
+            
+            
         }
 
         [HttpPost]
@@ -96,16 +71,10 @@ namespace BankApi.Controllers
 
             account.Number = rnd.Next(100, 99999);
             account.Owner = accountRequest.Owner;
-            account.Id = IdHelper.GetNextId(_accountIdFileName);
-
-            var listAccounts = new List<Account>()
-            {
-                account
-            };
 
             try
             {
-                csvAccountService.WriteToCsv(listAccounts, _accountFileName);
+                _accountsService.AddAccount(account);
             }
             catch (Exception ex)
             {
@@ -135,7 +104,6 @@ namespace BankApi.Controllers
 
             var transaction = new Transaction
             {
-                Id = IdHelper.GetNextId(_transactionIdFileName),
                 Amount = depositRequest.Amount,
                 Date = DateTime.Now,
                 TrasactionType = TransactionType.Deposit,
@@ -174,7 +142,6 @@ namespace BankApi.Controllers
 
             var transaction = new Transaction
             {
-                Id = IdHelper.GetNextId(_transactionIdFileName),
                 Amount = withdrawRequest.Amount,
                 Date = DateTime.Now,
                 TrasactionType = TransactionType.Withdraw,
@@ -274,13 +241,6 @@ namespace BankApi.Controllers
             return Accepted(accountToUpdate);
         }
 
-        [HttpGet("ping")]
-
-        public ActionResult Ping()
-        {
-            
-            return Ok();
-        }
     }
 
 }

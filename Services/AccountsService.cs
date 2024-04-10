@@ -1,17 +1,19 @@
 ﻿using BankApi.Context;
+using BankApi.Enums;
 using BankApi.Models;
 
 namespace BankApi.Services
 {
-    public interface IAccountService
+    public interface IAccountsService
     {
         public void AddAccount(Account account);
-        public void UpdateAccount(Account account);
-        public void DeleteAccount(int id);
+        public OperationResult UpdateOwnerName(int id, string ownerName);
+        public OperationResult DeleteAccount(int id);
         public Account GetAccountById(int id);
         public List<Account> GetAccounts();
+        public void UpdateAccount(Account account);
     }
-    public class AccountsService : IAccountService
+    public class AccountsService : IAccountsService
     {
         private readonly BankContext _context;
         public AccountsService(BankContext context) 
@@ -25,9 +27,34 @@ namespace BankApi.Services
             _context.SaveChanges();
         }
 
-        public void DeleteAccount(int id)
+        public OperationResult UpdateOwnerName(int id, string ownerName) 
         {
-            throw new NotImplementedException();
+            var account = _context.Accounts.FirstOrDefault(x => x.Id == id);
+            if (account == null) 
+            {
+                return OperationResult.Failed;
+            }
+
+            account.Owner = ownerName;
+
+            _context.Accounts.Update(account);
+            _context.SaveChanges();
+
+            return OperationResult.Success;
+
+        }
+
+        public OperationResult DeleteAccount(int id)
+        {
+            var account = _context.Accounts.FirstOrDefault(x => x.Id == id);
+            if (account == null)
+            { 
+                return OperationResult.Failed;
+            }
+
+            _context.Accounts.Remove(account);
+            _context.SaveChanges();
+            return OperationResult.Success;
         }
 
         public Account GetAccountById(int id)
@@ -44,7 +71,9 @@ namespace BankApi.Services
 
         public void UpdateAccount(Account account)
         {
-            throw new NotImplementedException();
+            _context.Accounts.Update(account);
+            _context.SaveChanges();
         }
+
     }
 }
