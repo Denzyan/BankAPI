@@ -1,7 +1,7 @@
-﻿using BankApi.Models;
+﻿using BankApiService.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace BankApi.Context
+namespace BankApiService.Context
 {
     public class BankContext : DbContext
     {

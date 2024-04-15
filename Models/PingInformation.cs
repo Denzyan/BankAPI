@@ -1,9 +1,8 @@
-﻿namespace BankApi.Models
+﻿namespace BankApiService.Models
 {
     public class PingInformation
     {
-        public string User { get; set; }
-        public string Password { get; set; }
+        public string Test { get; set; }
 
     }
 }

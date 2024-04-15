@@ -1,12 +1,12 @@
-﻿using BankApi.Context;
-using BankApi.Enums;
-using BankApi.Models;
+﻿using BankApiService.Context;
+using BankApiService.Enums;
+using BankApiService.Models;
 
-namespace BankApi.Services
+namespace BankApiService.Services
 {
     public interface IAccountsService
     {
-        public void AddAccount(Account account);
+        public Account CreateAccount(string ownerName);
         public OperationResult UpdateOwnerName(int id, string ownerName);
         public OperationResult DeleteAccount(int id);
         public Account GetAccountById(int id);
@@ -16,15 +16,23 @@ namespace BankApi.Services
     public class AccountsService : IAccountsService
     {
         private readonly BankContext _context;
+        private readonly Random random = new Random();
         public AccountsService(BankContext context) 
         {  
             _context = context;
         }
 
-        public void AddAccount(Account account)
+        public Account CreateAccount(string ownerName)
         {
+            var account = new Account();
+
+            account.Number = random.Next(100, 99999);
+            account.Owner = ownerName;
+
             _context.Accounts.Add(account);
             _context.SaveChanges();
+
+            return account;
         }
 
         public OperationResult UpdateOwnerName(int id, string ownerName) 

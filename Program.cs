@@ -1,12 +1,80 @@
-using BankApi.Context;
-using BankApi.Services;
+using BankApiService.Context;
+using BankApiService.Services;
+using System.Reflection;
 
-namespace BankApi
+namespace BankApiService
 {
     public class Program
     {
         public static void Main(string[] args)
         {
+            var builder = WebApplication.CreateBuilder(args);
+
+            var env = builder.Environment.EnvironmentName;
+
+            builder.Configuration
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{env}.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables()
+                .Build();
+            // Add services to the container.
+
+            var configuration = builder.Configuration;
+
+            builder.Services.AddControllers();
+
+            builder.Services.AddEntityFrameworkSqlite()
+                .AddDbContext<BankContext>();
+
+
+            var serviceProvide = builder.Services.BuildServiceProvider();
+            var context = serviceProvide.GetRequiredService<BankContext>();
+            context.Database.EnsureCreated();
+
+
+            // DI
+            builder.Services.AddSingleton<IAccountsService, AccountsService>();
+            builder.Services.AddSingleton<ITransactionService, TransactionService>();
+
+            builder.Services.AddEndpointsApiExplorer();
+
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new() { Title = "BankApiService", Version = "v1" });
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
+            });
+
+            // Add Cors
+            builder.Services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+            {
+                builder.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+            }));
+
+            var app = builder.Build();
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "BankApiService API v1");
+            });
+
+            // Configure the HTTP request pipeline.
+
+            app.UseHttpsRedirection();
+
+            app.UseAuthorization();
+            app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
+
+            app.MapControllers();
+
+
+            app.Run();
+        }
+        /*{
             var builder = WebApplication.CreateBuilder(args);
 
             var env = builder.Environment.EnvironmentName;
@@ -36,7 +104,15 @@ namespace BankApi
 
             builder.Services.AddEndpointsApiExplorer();
 
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new() { Title = "BankApiService", Version = "v1"});
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
+            });
+
+
 
             // Add Cors
             builder.Services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
@@ -48,12 +124,13 @@ namespace BankApi
 
             var app = builder.Build();
 
-            if (app.Environment.IsDevelopment())
+            
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            };
-
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "BankApiService API v1");
+            });
+            
             // Configure the HTTP request pipeline.
 
             app.UseHttpsRedirection();
@@ -64,6 +141,6 @@ namespace BankApi
             app.MapControllers();
 
             app.Run();
-        }
+        }*/
     }
 }

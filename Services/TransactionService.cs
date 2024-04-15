@@ -1,7 +1,7 @@
-﻿using BankApi.Context;
-using BankApi.Models;
+﻿using BankApiService.Context;
+using BankApiService.Models;
 
-namespace BankApi.Services
+namespace BankApiService.Services
 {
     public interface ITransactionService
     { 

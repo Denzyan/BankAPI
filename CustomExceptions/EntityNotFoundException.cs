@@ -1,4 +1,4 @@
-﻿namespace BankApi.CustomExceptions
+﻿namespace BankApiService.CustomExceptions
 {
     public class EntityNotFoundException : Exception
     {

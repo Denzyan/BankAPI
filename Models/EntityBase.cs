@@ -1,4 +1,4 @@
-﻿namespace BankApi.Models
+﻿namespace BankApiService.Models
 {
     public class EntityBase
     {

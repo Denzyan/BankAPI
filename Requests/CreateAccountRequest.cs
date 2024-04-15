@@ -1,4 +1,4 @@
-﻿namespace BankApi.Requests
+﻿namespace BankApiService.Requests
 {
     public class CreateAccountRequest
     {

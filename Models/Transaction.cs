@@ -1,7 +1,7 @@
-﻿using BankApi.Enums;
+﻿using BankApiService.Enums;
 using System.Text.Json.Serialization;
 
-namespace BankApi.Models
+namespace BankApiService.Models
 
 {
     public class Transaction : EntityBase

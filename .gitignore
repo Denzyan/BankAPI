@@ -751,8 +751,14 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
-/BankAPI/accounts.csv
-/BankAPI/id.txt
-/BankAPI/mydatabase.db
-/BankAPI/mydatabase.db-shm
-/BankAPI/mydatabase.db-wal
+# Fody - auto-generated XML schema
+FodyWeavers.xsd
+
+/BankApiService/accounts.csv
+/BankApiService/id.txt
+/BankApiService/transaction.csv
+*.csv
+*.txt
+/BankApiService/mydatabase.db
+/BankApiService/mydatabase.db-shm
+/BankApiService/mydatabase.db-wal
