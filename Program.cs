@@ -32,8 +32,8 @@ namespace BankApiService
             context.Database.EnsureCreated();
 
             // DI
-            builder.Services.AddSingleton<IAccountsService, AccountsService>();
-            builder.Services.AddSingleton<ITransactionService, TransactionService>();
+            builder.Services.AddScoped<IAccountsService, AccountsService>();
+            builder.Services.AddScoped<ITransactionService, TransactionService>();
 
             builder.Services.AddEndpointsApiExplorer();
 
